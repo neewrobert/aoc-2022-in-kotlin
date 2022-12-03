@@ -1,4 +1,4 @@
-package src.main.kotlin.solutions.year2022
+package solutions.year2022
 
 import readInputText
 
