@@ -2,73 +2,48 @@ package solutions.year2022
 
 import readInputLines
 
+private val lose = mapOf(1 to 0, 2 to 1, 0 to 2)
+private val won = mapOf(0 to 1, 1 to 2, 2 to 0)
+
 fun main() {
 
 
-    fun getTooPoint(tool: String): Int {
-        return (tool.codePointAt(0) - 65) + 1
-    }
+    fun getResultScore(elfCode: Int, villainCode: Int) =
+        3 * elfCode to when (elfCode) {
+            0 -> lose[villainCode]!!
+            1 -> villainCode
+            else -> won[villainCode]!!
+        } + 1
 
-    fun calculateMatchScore(villainPlay: String, elfPlay: String, useStrategyAsPlay: Boolean): Pair<Int, String?> {
-        val victory = mapOf("A" to "B", "B" to "C", "C" to "A")
-        val lose = mapOf("C" to "B", "B" to "C", "A" to "B")
-        val elfMap = mapOf("X" to "A", "Y" to "B", "Z" to "C")
-        return if (useStrategyAsPlay) when (elfMap[elfPlay]) {
-            villainPlay -> 3 to elfMap[elfPlay]!!//draw
-            victory[villainPlay] -> 6 to elfMap[elfPlay]!!//win
-            else -> 0 to elfMap[elfPlay]!! // lose
-        }
-        else {
-            when (elfPlay) {
-                "X" -> 0 to lose[villainPlay]!!
-                "Z" -> 6 to victory[villainPlay]!!
-                else -> 3 to villainPlay
-            }
-        }
+    fun getResultScoreWithPlay(elfCode: Int, villainCode: Int) = when {
+        villainCode == elfCode -> 3
+        won[villainCode]!! == elfCode -> 6
+        else -> 0
+    } to (elfCode + 1)
 
-    }
-
-    fun calculateScore(input: List<String>, useStrategyAsPlay: Boolean = true): Int {
-        return input.sumOf { round ->
-            val (villain, elf) = round.split(" ")
-            val matchScore = calculateMatchScore(villain, elf, useStrategyAsPlay)
-            return@sumOf matchScore.first + getTooPoint(matchScore.second!!)
-        }
-    }
-
-    fun part1(input: List<String>): Int {
-        return calculateScore(input)
-    }
-
-    fun calculateScore2(input: List<String>, withPlay: Boolean): Int {
-        val lose = mapOf(1 to 0, 2 to 1, 0 to 2)
-        val won = mapOf(0 to 1, 1 to 2, 2 to 0)
-
+    fun calculateScore(input: List<String>, withPlay: Boolean = true): Int {
         return input.sumOf { round ->
             val (op, result) = round.split(" ").map { it[0].code }
-            val opCode = op - 'A'.code
-            val meCode = result - 'X'.code
+            val villainCode = op - 'A'.code
+            val elfCode = result - 'X'.code
 
             val (resultScore, playScore) = if (withPlay) {
-                when {
-                    opCode == meCode -> 3
-                    won[opCode]!! == meCode -> 6
-                    else -> 0
-                } to meCode + 1
+                getResultScoreWithPlay(villainCode, elfCode)
             } else {
-                3 * meCode to when (meCode) {
-                    0 -> lose[opCode]!!
-                    1 -> opCode
-                    else -> won[opCode]!!
-                } + 1
+                getResultScore(elfCode, villainCode)
             }
 
             resultScore + playScore
         }
     }
 
+
+    fun part1(input: List<String>): Int {
+        return calculateScore(input)
+    }
+
     fun part2(input: List<String>): Int {
-        return calculateScore2(input, false)
+        return calculateScore(input, false)
     }
 
     val testInput = readInputLines("2022", "Day2_test")
@@ -76,7 +51,7 @@ fun main() {
     val testResult = part1(testInput)
     println(testResult)
     check(testResult != 0)
-    check(testResult == 35)
+    check(testResult == 17)
 
     val testResultPart2 = part2(testInput)
     println(testResultPart2)
